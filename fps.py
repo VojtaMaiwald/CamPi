@@ -9,4 +9,4 @@ class FPS:
             del self.list[0]
 
     def getFps(self):
-        return 1//(sum(self.list)/len(self.list))
+        return int(1//(sum(self.list)/len(self.list)))

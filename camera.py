@@ -18,13 +18,18 @@ from picamera2 import Picamera2
 import time
 from fps import FPS
 
+MODE = 2
+
 def main():
     stop = False
     fps = FPS(100)
     picam2 = Picamera2()
+    font = cv2.FONT_HERSHEY_SIMPLEX
     
-    mode = picam2.sensor_modes[2]
-    main = {"format": 'XRGB8888', "size": (640, 360)}
+    mode = picam2.sensor_modes[MODE]
+    #main = {"format": 'XRGB8888', "size": (640, 480 if MODE in [2, 4] else 360)}
+    #main = {"format": 'XRGB8888', "size": mode["size"]}
+    main = {"format": 'XRGB8888', "size": (mode["size"][0]//2, mode["size"][1]//2)}
     picam2.configure(picam2.create_preview_configuration(main = main, raw = mode))
 
     picam2.start()
@@ -36,13 +41,14 @@ def main():
 
     while not stop:
         start = time.time()
-        im = picam2.capture_array()
+        image = picam2.capture_array()
         end = time.time()
         fps.addFrameTime(end - start)
 
-        print(f"{fps.getFps()}   ", end="\r")
+        cv2.putText(image, f"FPS: {fps.getFps()}", (0, 20), font, 0.75, (0, 255, 0), 2, cv2.LINE_AA)
+        cv2.putText(image, f"Res: {image.shape[1]}x{image.shape[0]}", (150, 20), font, 0.75, (0, 0, 255), 2, cv2.LINE_AA)
 
-        cv2.imshow("Camera", im)
+        cv2.imshow("Camera", image)
     
         key = cv2.waitKey(1) & 0xFF
         if key == ord("q"):
